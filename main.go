@@ -1,29 +1,19 @@
 package main
 
 import (
-	"bytes"
-	"crypto/sha1"
-	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-	"net/url"
 	"os"
-	"path"
-	"strings"
-
-	"github.com/PuerkitoBio/goquery"
-	"golang.org/x/net/html"
+	"stashbox/pkg/crawler"
 )
 
-// TODO cleanup
-// TODO text extraction isn't quite there
-// TODO status display,etc
-// TODO some sort of hashing or date comparisons.../?
-// TODO figure out how to save a new copy every time...symlink latest hash..?  basically  we want to do "append only"
-// TODO  tests
-// TODO save rendered pdf
+// TODO implement functional options
+// TODO implement pdf rendering
+// TODO figure out a better way to generate a file name
+// TODO figure out best way to visualize this
+// TODO how do we handle revisions
+// TODO append only methodology
+// TODO tests
 
 var u string
 var basePath string
@@ -39,106 +29,19 @@ func main() {
 		os.Exit(1)
 	}
 
-	savePath := path.Join(basePath, getSavePath(u))
-	resp, err := http.Get(u)
-	if err != nil {
-		panic(err)
-	}
-	defer resp.Body.Close()
-
-	// read html
-	htmlBody, err := ioutil.ReadAll(resp.Body)
+	c, err := crawler.NewCrawler(basePath)
 	if err != nil {
 		panic(err)
 	}
 
-	// make dirs if needed
-	// BUG why is this needed???
-	err = os.MkdirAll(savePath, 0777)
+	c.AddUrl(u)
+	err = c.Crawl()
 	if err != nil {
 		panic(err)
 	}
 
-	// get the title
-	title, err := getTitle(htmlBody)
+	err = c.Save()
 	if err != nil {
 		panic(err)
 	}
-
-	// write to file
-	err = ioutil.WriteFile(path.Join(savePath, fmt.Sprintf("%s.html", title)), htmlBody, 0777)
-	if err != nil {
-		panic(err)
-	}
-
-	// get text
-	textBody, err := getTextBody(htmlBody)
-	if err != nil {
-		panic(err)
-	}
-	// write to file
-	err = ioutil.WriteFile(path.Join(savePath, fmt.Sprintf("%s.txt", title)), []byte(textBody), 0777)
-	if err != nil {
-		panic(err)
-	}
-}
-
-func getTextBody(htmlBody []byte) (string, error) {
-	p := strings.NewReader(string(htmlBody))
-	doc, err := goquery.NewDocumentFromReader(p)
-	if err != nil {
-		return "", err
-	}
-	doc.Find("script").Each(func(i int, el *goquery.Selection) {
-		el.Remove()
-	})
-	return doc.Text(), nil
-}
-
-func getTitle(htmlBody []byte) (string, error) {
-	doc, err := html.Parse(bytes.NewReader(htmlBody))
-	if err != nil {
-		panic("Fail to parse html")
-	}
-	title, ok := traverseDoc(doc)
-	if !ok {
-		return "", errors.New("No title found, malformed HTML")
-	}
-	return title, nil
-}
-
-func isTitleElement(n *html.Node) bool {
-	return n.Type == html.ElementNode && n.Data == "title"
-}
-
-func traverseDoc(n *html.Node) (string, bool) {
-	if isTitleElement(n) {
-		return n.FirstChild.Data, true
-	}
-
-	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		result, ok := traverseDoc(c)
-		if ok {
-			return result, ok
-		}
-	}
-
-	return "", false
-}
-
-func getSavePath(u string) string {
-	// break url down
-	parsedUrl, err := url.Parse(u)
-	if err != nil {
-		panic(err)
-	}
-
-	domain := parsedUrl.Host
-	pathPart := parsedUrl.Path
-	h := sha1.New()
-	h.Write([]byte(pathPart))
-	bs := h.Sum(nil)
-
-	p := path.Join(domain, fmt.Sprintf("%x", bs))
-	return p
 }
