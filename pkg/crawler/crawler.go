@@ -9,9 +9,8 @@ import (
 	"net/url"
 	"os"
 	"path"
-	"strings"
 
-	"github.com/PuerkitoBio/goquery"
+	"jaytaylor.com/html2text"
 )
 
 type Site struct {
@@ -118,15 +117,12 @@ func getHtmlBody(url string) (body []byte, err error) {
 }
 
 func getTextBody(htmlBody []byte) (body []byte, err error) {
-	p := strings.NewReader(string(htmlBody))
-	doc, err := goquery.NewDocumentFromReader(p)
+	text, err := html2text.FromString(string(htmlBody), html2text.Options{PrettyTables: true})
 	if err != nil {
 		return body, err
 	}
-	doc.Find("script").Each(func(i int, el *goquery.Selection) {
-		el.Remove()
-	})
-	return []byte(doc.Text()), nil
+
+	return []byte(text), nil
 }
 
 func ensureArchive(p string) {
