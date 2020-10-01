@@ -7,12 +7,6 @@ import (
 	"stashbox/pkg/crawler"
 )
 
-// TODO implement functional options
-// TODO implement pdf rendering
-// TODO figure out a better way to generate a file name
-// TODO how do we handle revisions
-// TODO tests
-
 var u string
 var basePath string
 
