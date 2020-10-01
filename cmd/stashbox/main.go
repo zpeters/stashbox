@@ -10,9 +10,7 @@ import (
 // TODO implement functional options
 // TODO implement pdf rendering
 // TODO figure out a better way to generate a file name
-// TODO figure out best way to visualize this
 // TODO how do we handle revisions
-// TODO append only methodology
 // TODO tests
 
 var u string
@@ -21,7 +19,7 @@ var basePath string
 func main() {
 	// get flags
 	flag.StringVar(&u, "url", "", "url to download")
-	flag.StringVar(&basePath, "b", "/users/zachpeters/Downloads/stashDb", "folder to save stash into")
+	flag.StringVar(&basePath, "b", "./stashDb", "folder to save stash into")
 	flag.Parse()
 
 	if u == "" {

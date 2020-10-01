@@ -32,7 +32,6 @@ func NewCrawler(archive string) (Crawler, error) {
 	}, nil
 }
 
-// TODO optimize this
 func (c *Crawler) Save() error {
 	ensureArchive(c.Archive)
 	for _, s := range c.Sites {
