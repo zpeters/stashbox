@@ -27,3 +27,6 @@ Having a local "static" copy of a website can help for research, change tracking
   -url string
     	url to download
 ```
+## Contributing
+
+New issues and pull requests are welcomed.  Please see [CONTRIBUTING.md](CONTRIBUTING.md)
