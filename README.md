@@ -19,10 +19,10 @@ Having a local "static" copy of a website can help for research, change tracking
 5. Searching and other functions
 
 ## Usage
-`
-Usage of ./stashbox:
+```
+ Usage of ./stashbox:
   -b string
     	folder to save stash into (default "./stashDb")
   -url string
     	url to download
-`
+```
