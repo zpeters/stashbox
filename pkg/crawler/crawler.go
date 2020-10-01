@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"time"
 
 	"jaytaylor.com/html2text"
 )
@@ -47,15 +48,22 @@ func (c *Crawler) Save() error {
 		io.WriteString(h, s.Url)
 		s.Title = fmt.Sprintf("%x", h.Sum(nil))
 
-		// create the domain folder if needed
-		err = os.MkdirAll(path.Join(c.Archive, d), 0777)
+		// get current time
+		t := time.Now()
+		dateTime := fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02d",
+			t.Year(), t.Month(), t.Day(),
+			t.Hour(), t.Minute(), t.Second())
+
+		// create the sub folder inside domain folder date-time as name
+		domainSubPath := path.Join(c.Archive, d, dateTime)
+		err = os.MkdirAll(domainSubPath, 0777)
 		if err != nil {
 			return err
 		}
 
 		// save the html
 		htmlFileName := fmt.Sprintf("%s.html", s.Title)
-		htmlSavePath := path.Join(c.Archive, d, htmlFileName)
+		htmlSavePath := path.Join(domainSubPath, htmlFileName)
 		err = ioutil.WriteFile(htmlSavePath, s.HtmlBody, 0777)
 		if err != nil {
 			return err
@@ -63,7 +71,7 @@ func (c *Crawler) Save() error {
 
 		// save the text
 		textFileName := fmt.Sprintf("%s.txt", s.Title)
-		textSavePath := path.Join(c.Archive, d, textFileName)
+		textSavePath := path.Join(domainSubPath, textFileName)
 		err = ioutil.WriteFile(textSavePath, s.TextBody, 0777)
 		if err != nil {
 			return err
