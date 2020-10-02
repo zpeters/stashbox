@@ -1,7 +1,9 @@
 package crawler
 
 import (
+	"bytes"
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -9,8 +11,11 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"runtime"
+	"strings"
 	"time"
 
+	"github.com/PuerkitoBio/goquery"
 	wkhtmltopdf "github.com/SebastiaanKlippert/go-wkhtmltopdf"
 	"jaytaylor.com/html2text"
 )
@@ -28,6 +33,11 @@ type Crawler struct {
 	Sites   []Site
 }
 
+// Error Messages
+var (
+	errNoTitleInHtml = errors.New("No title tag in HTML response")
+)
+
 func NewCrawler(archive string) (Crawler, error) {
 	return Crawler{
 		Archive: archive,
@@ -44,17 +54,15 @@ func (c *Crawler) Save() error {
 		}
 		d := parsed.Host
 
-		// generate a file title
-		h := sha256.New()
-		_, err = io.WriteString(h, s.Url)
-		if err != nil {
-			return err
-		}
-		s.Title = fmt.Sprintf("%x", h.Sum(nil))
-
 		// get current time
 		t := time.Now()
-		dateTime := fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02d",
+		var timestamp string
+		if runtime.GOOS == "windows" {
+			timestamp = "%d-%02d-%02dT%02d_%02d_%02d" // use underscores instead of colons
+		} else {
+			timestamp = "%d-%02d-%02dT%02d:%02d:%02d"
+		}
+		dateTime := fmt.Sprintf(timestamp,
 			t.Year(), t.Month(), t.Day(),
 			t.Hour(), t.Minute(), t.Second())
 
@@ -95,6 +103,45 @@ func (c *Crawler) AddUrl(url string) {
 	c.Urls = append(c.Urls, url)
 }
 
+// create filename using site title
+// remove illegal characters in the filename
+func createSiteFilename(url string, htmlBody []byte) (string, error) {
+	forbiddenCharactersUnix := [...]rune{'/'}
+	forbiddenCharactersWindows := [...]rune{'/', '<', '>', ':', '"', '\\', '|', '?', '*'}
+	reservedFilenamesWindows := [...]string{"CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"}
+
+	title, err := getHtmlTitle(htmlBody)
+
+	// if there is no title, do old way of creating hash
+	if err == errNoTitleInHtml {
+		h := sha256.New()
+		_, err = io.WriteString(h, url)
+		if err != nil {
+			return "", err
+		}
+		title = fmt.Sprintf("%x", h.Sum(nil))
+	} else if err != nil {
+		return "", err
+	}
+
+	// Fix if filename is invalid
+	if runtime.GOOS == "windows" { // is windows
+		for _, ch := range forbiddenCharactersWindows {
+			title = strings.ReplaceAll(title, string(ch), "_")
+		}
+		for _, name := range reservedFilenamesWindows {
+			if title == name { // wrap title with quotes
+				title = "'" + title + "'"
+			}
+		}
+	} else { // is unix
+		for _, ch := range forbiddenCharactersUnix {
+			title = strings.ReplaceAll(title, string(ch), "_")
+		}
+	}
+	return title, nil
+}
+
 func (c *Crawler) Crawl() error {
 	for _, u := range c.Urls {
 		fmt.Printf("Crawling %s...\n", u)
@@ -105,7 +152,12 @@ func (c *Crawler) Crawl() error {
 		if err != nil {
 			return err
 		}
-		site.HtmlBody = htmlBody
+
+		title, err := createSiteFilename(u, htmlBody)
+		if err != nil {
+			return err
+		}
+		site.Title = title
 
 		textBody, err := getTextBody(htmlBody)
 		if err != nil {
@@ -118,6 +170,24 @@ func (c *Crawler) Crawl() error {
 		c.Sites = append(c.Sites, site)
 	}
 	return nil
+}
+
+func getHtmlTitle(body []byte) (title string, err error) {
+	// HTML DOM Document
+
+	r := bytes.NewReader(body)
+	doc, err := goquery.NewDocumentFromReader(r)
+
+	if err != nil {
+		return "", err
+	}
+	titleTag := doc.Find("title").First()
+
+	if titleTag.Size() == 0 {
+		return "", errNoTitleInHtml
+	}
+
+	return titleTag.Text(), nil
 }
 
 func getHtmlBody(url string) (body []byte, err error) {
