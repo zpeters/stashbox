@@ -64,7 +64,7 @@ func (c *Crawler) Save() error {
 		// save the html
 		htmlFileName := fmt.Sprintf("%s.html", s.Title)
 		htmlSavePath := path.Join(domainSubPath, htmlFileName)
-		err = ioutil.WriteFile(htmlSavePath, s.HtmlBody, 0777)
+		err = ioutil.WriteFile(htmlSavePath, s.HtmlBody, 0600)
 		if err != nil {
 			return err
 		}
@@ -72,7 +72,7 @@ func (c *Crawler) Save() error {
 		// save the text
 		textFileName := fmt.Sprintf("%s.txt", s.Title)
 		textSavePath := path.Join(domainSubPath, textFileName)
-		err = ioutil.WriteFile(textSavePath, s.TextBody, 0777)
+		err = ioutil.WriteFile(textSavePath, s.TextBody, 0600)
 		if err != nil {
 			return err
 		}
