@@ -11,6 +11,8 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"runtime"
+	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -87,6 +89,45 @@ func (c *Crawler) AddUrl(url string) {
 	c.Urls = append(c.Urls, url)
 }
 
+// create filename using site title
+// remove illegal characters in the filename
+func createSiteFilename(url string, htmlBody []byte) (string, error) {
+	forbiddenCharactersUnix := [...]rune{'/'}
+	forbiddenCharactersWindows := [...]rune{'/', '<', '>', ':', '"', '\\', '|', '?', '*'}
+	reservedFilenamesWindows := [...]string{"CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"}
+
+	title, err := getHtmlTitle(htmlBody)
+
+	// if there is no title, do old way of creating hash
+	if err == errNoTitleInHtml {
+		h := sha256.New()
+		_, err = io.WriteString(h, url)
+		if err != nil {
+			return "", err
+		}
+		title = fmt.Sprintf("%x", h.Sum(nil))
+	} else if err != nil {
+		return "", err
+	}
+
+	// Fix if filename is invalid
+	if runtime.GOOS == "windows" { // is windows
+		for _, ch := range forbiddenCharactersWindows {
+			title = strings.ReplaceAll(title, string(ch), "")
+		}
+		for _, name := range reservedFilenamesWindows {
+			if title == name { // wrap title with quotes
+				title = "'" + title + "'"
+			}
+		}
+	} else { // is unix
+		for _, ch := range forbiddenCharactersUnix {
+			title = strings.ReplaceAll(title, string(ch), "")
+		}
+	}
+	return title, nil
+}
+
 func (c *Crawler) Crawl() error {
 	for _, u := range c.Urls {
 		fmt.Printf("Crawling %s...\n", u)
@@ -98,20 +139,11 @@ func (c *Crawler) Crawl() error {
 			return err
 		}
 
-		title, err := getHtmlTitle(htmlBody)
-
-		// if there is no title, do old way of creating hash
-		if err == errNoTitleInHtml {
-			h := sha256.New()
-			_, err = io.WriteString(h, u)
-			if err != nil {
-				return err
-			}
-			title = fmt.Sprintf("%x", h.Sum(nil))
-		} else if err != nil {
+		title, err := createSiteFilename(u, htmlBody)
+		if err != nil {
 			return err
 		}
-		site.Title = "'" + title + "'"
+		site.Title = title
 
 		textBody, err := getTextBody(htmlBody)
 		if err != nil {
