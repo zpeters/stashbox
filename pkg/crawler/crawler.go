@@ -1,7 +1,7 @@
 package crawler
 
 import (
-	"crypto/sha1"
+	"crypto/sha256"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -44,8 +44,11 @@ func (c *Crawler) Save() error {
 		d := parsed.Host
 
 		// generate a file title
-		h := sha1.New()
-		io.WriteString(h, s.Url)
+		h := sha256.New()
+		_, err = io.WriteString(h, s.Url)
+		if err != nil {
+			return err
+		}
 		s.Title = fmt.Sprintf("%x", h.Sum(nil))
 
 		// get current time
@@ -56,7 +59,7 @@ func (c *Crawler) Save() error {
 
 		// create the sub folder inside domain folder date-time as name
 		domainSubPath := path.Join(c.Archive, d, dateTime)
-		err = os.MkdirAll(domainSubPath, 0777)
+		err = os.MkdirAll(domainSubPath, 0700)
 		if err != nil {
 			return err
 		}
@@ -64,7 +67,7 @@ func (c *Crawler) Save() error {
 		// save the html
 		htmlFileName := fmt.Sprintf("%s.html", s.Title)
 		htmlSavePath := path.Join(domainSubPath, htmlFileName)
-		err = ioutil.WriteFile(htmlSavePath, s.HtmlBody, 0777)
+		err = ioutil.WriteFile(htmlSavePath, s.HtmlBody, 0600)
 		if err != nil {
 			return err
 		}
@@ -72,7 +75,7 @@ func (c *Crawler) Save() error {
 		// save the text
 		textFileName := fmt.Sprintf("%s.txt", s.Title)
 		textSavePath := path.Join(domainSubPath, textFileName)
-		err = ioutil.WriteFile(textSavePath, s.TextBody, 0777)
+		err = ioutil.WriteFile(textSavePath, s.TextBody, 0600)
 		if err != nil {
 			return err
 		}
@@ -110,6 +113,8 @@ func (c *Crawler) Crawl() error {
 }
 
 func getHtmlBody(url string) (body []byte, err error) {
+	// #nosec - gosec will detect this as a G107 error
+	// the point of this function *is* to accept a variable URL
 	resp, err := http.Get(url)
 	if err != nil {
 		return body, err
@@ -133,7 +138,7 @@ func getTextBody(htmlBody []byte) (body []byte, err error) {
 }
 
 func ensureArchive(p string) {
-	err := os.MkdirAll(p, 0777)
+	err := os.MkdirAll(p, 0700)
 	if err != nil {
 		panic(err)
 	}
