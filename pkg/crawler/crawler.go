@@ -2,6 +2,7 @@ package crawler
 
 import (
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -11,6 +12,7 @@ import (
 	"path"
 	"time"
 
+	"github.com/PuerkitoBio/goquery"
 	"jaytaylor.com/html2text"
 )
 
@@ -27,6 +29,11 @@ type Crawler struct {
 	Sites   []Site
 }
 
+// Error Messages
+var (
+	errNoTitleInHtml = errors.New("No title tag in HTML response")
+)
+
 func NewCrawler(archive string) (Crawler, error) {
 	return Crawler{
 		Archive: archive,
@@ -42,14 +49,6 @@ func (c *Crawler) Save() error {
 			return err
 		}
 		d := parsed.Host
-
-		// generate a file title
-		h := sha256.New()
-		_, err = io.WriteString(h, s.Url)
-		if err != nil {
-			return err
-		}
-		s.Title = fmt.Sprintf("%x", h.Sum(nil))
 
 		// get current time
 		t := time.Now()
@@ -93,7 +92,28 @@ func (c *Crawler) Crawl() error {
 
 		var site Site
 
-		htmlBody, err := getHtmlBody(u)
+		resp, err := getHtmlResponse(u)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+
+		title, err := getHtmlTitle(resp)
+
+		// if there is no title, do old way of creating hash
+		if err == errNoTitleInHtml {
+			h := sha256.New()
+			_, err = io.WriteString(h, u)
+			if err != nil {
+				return err
+			}
+			title = fmt.Sprintf("%x", h.Sum(nil))
+		} else if err != nil {
+			return err
+		}
+		site.Title = title
+
+		htmlBody, err := getHtmlBody(resp)
 		if err != nil {
 			return err
 		}
@@ -112,15 +132,33 @@ func (c *Crawler) Crawl() error {
 	return nil
 }
 
-func getHtmlBody(url string) (body []byte, err error) {
+func getHtmlResponse(url string) (resp *http.Response, err error) {
 	// #nosec - gosec will detect this as a G107 error
 	// the point of this function *is* to accept a variable URL
-	resp, err := http.Get(url)
+	resp, err = http.Get(url)
 	if err != nil {
-		return body, err
+		return nil, err
 	}
-	defer resp.Body.Close()
+	return resp, err
+}
 
+func getHtmlTitle(resp *http.Response) (title string, err error) {
+	// HTML DOM Document
+	doc, err := goquery.NewDocumentFromResponse(resp)
+
+	if err != nil {
+		return "", err
+	}
+	titleTag := doc.Find("title").First()
+
+	if titleTag.Size() == 0 {
+		return "", errNoTitleInHtml
+	}
+
+	return titleTag.Text(), nil
+}
+
+func getHtmlBody(resp *http.Response) (body []byte, err error) {
 	htmlBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return body, err
