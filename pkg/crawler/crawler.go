@@ -11,6 +11,7 @@ import (
 	"path"
 	"time"
 
+	wkhtmltopdf "github.com/SebastiaanKlippert/go-wkhtmltopdf"
 	"jaytaylor.com/html2text"
 )
 
@@ -79,6 +80,13 @@ func (c *Crawler) Save() error {
 		if err != nil {
 			return err
 		}
+
+		// save the pdf
+		pdfFileName := fmt.Sprintf("%s.pdf", s.Title)
+		pdfSavePath := path.Join(domainSubPath, pdfFileName)
+		if err := generatePDF(pdfSavePath, s.Url); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -142,4 +150,23 @@ func ensureArchive(p string) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func generatePDF(path, url string) error {
+	pdfg, err := wkhtmltopdf.NewPDFGenerator()
+	if err != nil {
+		return err
+	}
+
+	pdfg.AddPage(wkhtmltopdf.NewPage(url))
+
+	if err = pdfg.Create(); err != nil {
+		return err
+	}
+
+	if err = pdfg.WriteFile(path); err != nil {
+		return err
+	}
+
+	return nil
 }
