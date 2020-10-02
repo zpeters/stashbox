@@ -113,7 +113,7 @@ func createSiteFilename(url string, htmlBody []byte) (string, error) {
 	// Fix if filename is invalid
 	if runtime.GOOS == "windows" { // is windows
 		for _, ch := range forbiddenCharactersWindows {
-			title = strings.ReplaceAll(title, string(ch), "")
+			title = strings.ReplaceAll(title, string(ch), "_")
 		}
 		for _, name := range reservedFilenamesWindows {
 			if title == name { // wrap title with quotes
@@ -122,7 +122,7 @@ func createSiteFilename(url string, htmlBody []byte) (string, error) {
 		}
 	} else { // is unix
 		for _, ch := range forbiddenCharactersUnix {
-			title = strings.ReplaceAll(title, string(ch), "")
+			title = strings.ReplaceAll(title, string(ch), "_")
 		}
 	}
 	return title, nil
