@@ -20,9 +20,10 @@ Having a local "static" copy of a website can help for research, change tracking
 
 ## Usage
 ```
- Usage of ./stashbox:
+Usage of ./stashbox:
   -b string
     	folder to save stash into (default "./stashDb")
+  -list
+    	list saved archives
   -url string
-    	url to download
-```
+    	url to download```
