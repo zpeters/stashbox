@@ -45,7 +45,10 @@ func (c *Crawler) Save() error {
 
 		// generate a file title
 		h := sha256.New()
-		io.WriteString(h, s.Url)
+		_, err = io.WriteString(h, s.Url)
+		if err != nil {
+			return err
+		}
 		s.Title = fmt.Sprintf("%x", h.Sum(nil))
 
 		// get current time
@@ -110,6 +113,8 @@ func (c *Crawler) Crawl() error {
 }
 
 func getHtmlBody(url string) (body []byte, err error) {
+	// #nosec - gosec will detect this as a G107 error
+	// the point of this function *is* to accept a variable URL
 	resp, err := http.Get(url)
 	if err != nil {
 		return body, err
