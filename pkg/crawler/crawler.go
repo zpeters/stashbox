@@ -55,7 +55,13 @@ func (c *Crawler) Save() error {
 
 		// get current time
 		t := time.Now()
-		dateTime := fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02d",
+		var timestamp string
+		if runtime.GOOS == "windows" {
+			timestamp = "%d-%02d-%02dT%02d_%02d_%02d" // use underscores instead of colons
+		} else {
+			timestamp = "%d-%02d-%02dT%02d:%02d:%02d"
+		}
+		dateTime := fmt.Sprintf(timestamp,
 			t.Year(), t.Month(), t.Day(),
 			t.Hour(), t.Minute(), t.Second())
 
