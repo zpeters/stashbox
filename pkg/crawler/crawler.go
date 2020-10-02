@@ -1,6 +1,7 @@
 package crawler
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"errors"
 	"fmt"
@@ -92,13 +93,12 @@ func (c *Crawler) Crawl() error {
 
 		var site Site
 
-		resp, err := getHtmlResponse(u)
+		htmlBody, err := getHtmlBody(u)
 		if err != nil {
 			return err
 		}
-		defer resp.Body.Close()
 
-		title, err := getHtmlTitle(resp)
+		title, err := getHtmlTitle(htmlBody)
 
 		// if there is no title, do old way of creating hash
 		if err == errNoTitleInHtml {
@@ -111,13 +111,7 @@ func (c *Crawler) Crawl() error {
 		} else if err != nil {
 			return err
 		}
-		site.Title = title
-
-		htmlBody, err := getHtmlBody(resp)
-		if err != nil {
-			return err
-		}
-		site.HtmlBody = htmlBody
+		site.Title = "'" + title + "'"
 
 		textBody, err := getTextBody(htmlBody)
 		if err != nil {
@@ -132,19 +126,11 @@ func (c *Crawler) Crawl() error {
 	return nil
 }
 
-func getHtmlResponse(url string) (resp *http.Response, err error) {
-	// #nosec - gosec will detect this as a G107 error
-	// the point of this function *is* to accept a variable URL
-	resp, err = http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-	return resp, err
-}
-
-func getHtmlTitle(resp *http.Response) (title string, err error) {
+func getHtmlTitle(body []byte) (title string, err error) {
 	// HTML DOM Document
-	doc, err := goquery.NewDocumentFromResponse(resp)
+
+	r := bytes.NewReader(body)
+	doc, err := goquery.NewDocumentFromReader(r)
 
 	if err != nil {
 		return "", err
@@ -158,7 +144,15 @@ func getHtmlTitle(resp *http.Response) (title string, err error) {
 	return titleTag.Text(), nil
 }
 
-func getHtmlBody(resp *http.Response) (body []byte, err error) {
+func getHtmlBody(url string) (body []byte, err error) {
+	// #nosec - gosec will detect this as a G107 error
+	// the point of this function *is* to accept a variable URL
+	resp, err := http.Get(url)
+	if err != nil {
+		return body, err
+	}
+	defer resp.Body.Close()
+
 	htmlBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return body, err
