@@ -1,8 +1,8 @@
 # stashbox
 [![Go Report Card](https://goreportcard.com/badge/github.com/zpeters/stashbox)](https://goreportcard.com/report/github.com/zpeters/stashbox)
 [![Build Status](https://travis-ci.org/zpeters/stashbox.svg?branch=main)](https://travis-ci.org/zpeters/stashbox)
-![Run Gosec](https://github.com/zpeters/stashbox/workflows/Run%20Gosec/badge.svg?branch=main)
-![CodeQL](https://github.com/zpeters/stashbox/workflows/CodeQL/badge.svg)
+[![Run Gosec](https://github.com/zpeters/stashbox/workflows/Run%20Gosec/badge.svg?branch=main)
+[![CodeQL](https://github.com/zpeters/stashbox/workflows/CodeQL/badge.svg)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/4318/badge)](https://bestpractices.coreinfrastructure.org/projects/4318)
 [![License](https://img.shields.io/github/license/zpeters/stashbox)](https://img.shields.io/github/license/zpeters/stashbox)
 [![Contributers](https://img.shields.io/github/contributors/zpeters/stashbox)](https://img.shields.io/github/contributors/zpeters/stashbox)
