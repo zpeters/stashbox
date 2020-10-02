@@ -16,11 +16,11 @@ Having a local "static" copy of a website can help for research, change tracking
 
 ## Roadmap
 
-1. Initial command line client to add urls to a personal archive with Text, Html and Pdf copies of the website
-2. Ability to save new versions of the same URL
-3. Version "diffing" and browsing
-4. User friendly interface (web, etc)
-5. Searching and other functions
+- [ ]  Initial command line client to add urls to a personal archive with Text, Html and Pdf copies of the website
+- [x]  Ability to save new versions of the same URL
+- [ ]  Version "diffing" and browsing
+- [ ]  User friendly interface (web, etc)
+- [ ]  Searching and other functions
 
 ## Usage
 ```
