@@ -1,6 +1,10 @@
 # stashbox
 [![Go Report Card](https://goreportcard.com/badge/github.com/zpeters/stashbox)](https://goreportcard.com/report/github.com/zpeters/stashbox)
 [![Build Status](https://travis-ci.org/zpeters/stashbox.svg?branch=main)](https://travis-ci.org/zpeters/stashbox)
+![CodeQL](https://github.com/zpeters/stashbox/workflows/CodeQL/badge.svg)
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/4318/badge)](https://bestpractices.coreinfrastructure.org/projects/4318)
+[![License](https://img.shields.io/github/license/zpeters/stashbox)](https://img.shields.io/github/license/zpeters/stashbox)
+[![Contributers](https://img.shields.io/github/contributors/zpeters/stashbox)](https://img.shields.io/github/contributors/zpeters/stashbox)
 
 ## Stashbox is your personal Internet Archive
 
@@ -26,4 +30,8 @@ Usage of ./stashbox:
   -list
     	list saved archives
   -url string
-    	url to download```
+    	url to download
+```
+## Contributing
+
+New issues and pull requests are welcomed.  Please see [CONTRIBUTING.md](CONTRIBUTING.md)
