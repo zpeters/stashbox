@@ -56,7 +56,7 @@ func (c *Crawler) Save() error {
 
 		// create the sub folder inside domain folder date-time as name
 		domainSubPath := path.Join(c.Archive, d, dateTime)
-		err = os.MkdirAll(domainSubPath, 0777)
+		err = os.MkdirAll(domainSubPath, 0700)
 		if err != nil {
 			return err
 		}
@@ -133,7 +133,7 @@ func getTextBody(htmlBody []byte) (body []byte, err error) {
 }
 
 func ensureArchive(p string) {
-	err := os.MkdirAll(p, 0777)
+	err := os.MkdirAll(p, 0700)
 	if err != nil {
 		panic(err)
 	}
