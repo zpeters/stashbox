@@ -1,7 +1,7 @@
 package crawler
 
 import (
-	"crypto/sha1"
+	"crypto/sha256"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -44,7 +44,7 @@ func (c *Crawler) Save() error {
 		d := parsed.Host
 
 		// generate a file title
-		h := sha1.New()
+		h := sha256.New()
 		io.WriteString(h, s.Url)
 		s.Title = fmt.Sprintf("%x", h.Sum(nil))
 
