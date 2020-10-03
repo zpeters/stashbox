@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"regexp"
 	"runtime"
 	"strings"
 	"time"
@@ -20,6 +21,7 @@ import (
 	"jaytaylor.com/html2text"
 )
 
+// Site ...
 type Site struct {
 	HtmlBody []byte
 	TextBody []byte
@@ -27,6 +29,7 @@ type Site struct {
 	Title    string
 }
 
+// Crawler ...
 type Crawler struct {
 	Urls    []string
 	Archive string
@@ -36,32 +39,43 @@ type Crawler struct {
 // Error Messages
 var (
 	errNoTitleInHtml = errors.New("No title tag in HTML response")
+	// regular expression from: https://mathiasbynens.be/demo/url-regex,
+	// by @imme_emosol
+	urlRegExp, _ = regexp.Compile(`^(https|http)://(-\.)?([^\s/?\.#-]+\.?)+(/[^\s]*)?$`)
 )
 
+// NewCrawler ...
 func NewCrawler(archive string) (Crawler, error) {
 	return Crawler{
 		Archive: archive,
 	}, nil
 }
 
+// Save ...
 func (c *Crawler) Save() error {
 	ensureArchive(c.Archive)
+
+	// save all sites one by one
 	for _, s := range c.Sites {
 		fmt.Printf("Saving %s...\n", s.Url)
+
 		parsed, err := url.Parse(s.Url)
 		if err != nil {
 			return err
 		}
+
 		d := parsed.Host
 
 		// get current time
 		t := time.Now()
 		var timestamp string
+
 		if runtime.GOOS == "windows" {
 			timestamp = "%d-%02d-%02dT%02d_%02d_%02d" // use underscores instead of colons
 		} else {
 			timestamp = "%d-%02d-%02dT%02d:%02d:%02d"
 		}
+
 		dateTime := fmt.Sprintf(timestamp,
 			t.Year(), t.Month(), t.Day(),
 			t.Hour(), t.Minute(), t.Second())
@@ -96,11 +110,28 @@ func (c *Crawler) Save() error {
 			return err
 		}
 	}
+
 	return nil
 }
 
-func (c *Crawler) AddUrl(url string) {
+// AddUrl ...
+func (c *Crawler) AddUrl(url string) error {
+	url = strings.TrimSpace(url)
+	if len(url) == 0 {
+		return errors.New("URL can't be empty or only containing space")
+	}
+
+	if !strings.Contains(url, "://") {
+		url = "http://" + url
+	}
+
+	if !urlRegExp.MatchString(url) {
+		return errors.New("Illegal url:" + url)
+	}
+
 	c.Urls = append(c.Urls, url)
+
+	return nil
 }
 
 // create filename using site title
@@ -142,6 +173,7 @@ func createSiteFilename(url string, htmlBody []byte) (string, error) {
 	return title, nil
 }
 
+// Crawl ...
 func (c *Crawler) Crawl() error {
 	for _, u := range c.Urls {
 		fmt.Printf("Crawling %s...\n", u)
@@ -157,18 +189,20 @@ func (c *Crawler) Crawl() error {
 		if err != nil {
 			return err
 		}
+
 		site.Title = title
 
 		textBody, err := getTextBody(htmlBody)
 		if err != nil {
 			return err
 		}
-		site.TextBody = textBody
 
+		site.TextBody = textBody
 		site.Url = u
 
 		c.Sites = append(c.Sites, site)
 	}
+
 	return nil
 }
 
@@ -197,6 +231,7 @@ func getHtmlBody(url string) (body []byte, err error) {
 	if err != nil {
 		return body, err
 	}
+
 	defer resp.Body.Close()
 
 	htmlBody, err := ioutil.ReadAll(resp.Body)
