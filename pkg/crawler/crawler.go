@@ -41,7 +41,7 @@ var (
 	errNoTitleInHtml = errors.New("No title tag in HTML response")
 	// regular expression from: https://mathiasbynens.be/demo/url-regex,
 	// by @imme_emosol
-	urlRegExp, _ = regexp.Compile("^(https|http)://(-\\.)?([^\\s/?\\.#-]+\\.?)+(/[^\\s]*)?$")
+	urlRegExp, _ = regexp.Compile(`^(https|http)://(-\.)?([^\s/?\.#-]+\.?)+(/[^\s]*)?$`)
 )
 
 // NewCrawler ...

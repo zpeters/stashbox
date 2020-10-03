@@ -1,6 +1,7 @@
 package crawler
 
 import (
+	"strconv"
 	"testing"
 )
 
@@ -28,6 +29,7 @@ func TestGetHtmlTitle(t *testing.T) {
 }
 
 func TestAddUrl(t *testing.T) {
+	count := 0
 	c, err := NewCrawler("")
 	if err != nil {
 		t.Errorf("Unable to create crawler:" + err.Error())
@@ -35,12 +37,14 @@ func TestAddUrl(t *testing.T) {
 
 	url := "https://www.github.com"
 	err = c.AddUrl(url)
+	count++
 	if err != nil {
 		t.Errorf("Test case for url: '" + url + "' failed; it should pass; error:" + err.Error())
 	}
 
 	url = "http://www.github.com:8000/"
 	err = c.AddUrl(url)
+	count++
 	if err != nil {
 		t.Errorf("Test case for url: '" + url + "' failed; it should pass; error:" + err.Error())
 	}
@@ -65,7 +69,12 @@ func TestAddUrl(t *testing.T) {
 
 	url = "www.github.com:8000/"
 	err = c.AddUrl(url)
+	count++
 	if err != nil {
 		t.Errorf("Test case for url: '" + url + "' failed; it should pass; error:" + err.Error())
+	}
+
+	if len(c.Urls) != count {
+		t.Errorf("There should be " + strconv.Itoa(count) + " entries, found:" + strconv.Itoa(len(c.Urls)))
 	}
 }
