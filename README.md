@@ -28,11 +28,30 @@ Having a local "static" copy of a website can help for research, change tracking
 Usage of ./stashbox:
   -b string
     	folder to save stash into (default "./stashDb")
+  -crawl
+    	crawl and save websites
   -list
     	list saved archives
-  -url string
-    	url to download
 ```
+
+## Instructions for usage
+
+1. Build the binary with name preferably stashbox
+1. You can give path to the stash folder using `-b` flag else it will default to ./stashDb
+1. Do `./stashbox -list` to get list of saved websites
+1. To save a single or multiple websites you have 2 options to provide the inputs
+
+- Run `./stashbox -crawl` and then provide number of websites and the urls of the websites to save as command line inputs
+- Create a urls.txt file with following structure and feed it to the binary like `./stashbox -crawl < urls.txt`
+  ```
+  5
+  https://www.site1.com
+  https://www.site2.com
+  https://www.site3.com
+  https://www.site4.com
+  https://www.site5.com
+  ```
+
 ## Contributing
 
 New issues and pull requests are welcomed.  Please see [CONTRIBUTING.md](CONTRIBUTING.md)
