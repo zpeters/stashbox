@@ -15,7 +15,7 @@ _GitHub desktop is much easier if you're unfamiliar with using git / GitHub on t
 * Clone down your copy of this repo onto your local machine: `git clone <YOUR GITHUB REPO URL>`
 * Navigate to the new directory git created. `cd stashbox`
 * Create a new branch for your work `git checkout -b <YOUR BRANCH NAME>` Your branch name should be something descriptive of the changes you wish to make, and can include the issue number this change is associated with. Example: `feature/45-update-docs`
-* Make your changes. 
+* Make your changes.
 * When you're ready to apply your changes, push your changed files to your forked repo
     * `git add <FILENAMES OF CHANGED FILES>`
     * `git commit -m "<YOUR COMMIT MESSAGE>"` Your commit message should be descriptive of the changes you made
@@ -30,3 +30,23 @@ _GitHub desktop is much easier if you're unfamiliar with using git / GitHub on t
     * Click `Create pull request`
 
 Your pull request will be reviewed and we'll get back to you!
+
+## Installing Dependencies
+
+Stashbox uses wkhtmltopdf to build pdfs
+
+### OSX
+
+    brew cask install wkhtmltopdf
+
+### Ubuntu
+
+    sudo apt install wkhtmltopdf
+
+## Building
+
+    go build ./cmd/stashbox
+
+## Testing
+
+    go test ./cmd/stashbox
