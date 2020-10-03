@@ -46,7 +46,11 @@ func main() {
 			panic(err)
 		}
 
-		c.AddUrl(u)
+		err = c.AddUrl(u)
+		if err != nil {
+			panic(err)
+		}
+
 		err = c.Crawl()
 		if err != nil {
 			panic(err)
