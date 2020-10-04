@@ -14,26 +14,26 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
-	"time"
+	"time"  // site type exported
 
 	"github.com/PuerkitoBio/goquery"
 	wkhtmltopdf "github.com/SebastiaanKlippert/go-wkhtmltopdf"
 	"jaytaylor.com/html2text"
 )
 
-// Site ...
+//  exported type Crawler
 type Site struct {
 	HtmlBody []byte
 	TextBody []byte
 	Url      string
 	Title    string
-}
+} //exported function NewCrawler
 
 // Crawler ...
 type Crawler struct {
 	Urls    []string
 	Archive string
-	Sites   []Site
+	Sites   []Site  //exported method crawler.save
 }
 
 // Error Messages
@@ -83,8 +83,8 @@ func (c *Crawler) Save() error {
 		// create the sub folder inside domain folder date-time as name
 		domainSubPath := path.Join(c.Archive, d, dateTime)
 		err = os.MkdirAll(domainSubPath, 0700)
-		if err != nil {
-			return err
+		if err != nil {  
+			return err //exported crawler.crawl
 		}
 
 		// save the html
