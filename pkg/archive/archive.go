@@ -6,7 +6,7 @@ import (
 	"path"
 )
 
-func GetArchives(p string) (archives []string, err error) {
+func GetArchives(p string) (archives []string, err error) { //warning: exported function GetArchives should have comment or be unexported (golint)
 	domains, err := ioutil.ReadDir(p)
 	if err != nil {
 		return archives, err
