@@ -58,60 +58,74 @@ func (c *Crawler) Save() error {
 	// save all sites one by one
 	for _, s := range c.Sites {
 		fmt.Printf("Saving %s...\n", s.Url)
-
-		parsed, err := url.Parse(s.Url)
-		if err != nil {
-			return err
-		}
-
-		d := parsed.Host
-
-		// get current time
-		t := time.Now()
-		var timestamp string
-
-		if runtime.GOOS == "windows" {
-			timestamp = "%d-%02d-%02dT%02d_%02d_%02d" // use underscores instead of colons
-		} else {
-			timestamp = "%d-%02d-%02dT%02d:%02d:%02d"
-		}
-
-		dateTime := fmt.Sprintf(timestamp,
-			t.Year(), t.Month(), t.Day(),
-			t.Hour(), t.Minute(), t.Second())
-
-		// create the sub folder inside domain folder date-time as name
-		domainSubPath := path.Join(c.Archive, d, dateTime)
-		err = os.MkdirAll(domainSubPath, 0700)
-		if err != nil {
-			return err
-		}
-
-		// save the html
-		htmlFileName := fmt.Sprintf("%s.html", s.Title)
-		htmlSavePath := path.Join(domainSubPath, htmlFileName)
-		err = ioutil.WriteFile(htmlSavePath, s.HtmlBody, 0600)
-		if err != nil {
-			return err
-		}
-
-		// save the text
-		textFileName := fmt.Sprintf("%s.txt", s.Title)
-		textSavePath := path.Join(domainSubPath, textFileName)
-		err = ioutil.WriteFile(textSavePath, s.TextBody, 0600)
-		if err != nil {
-			return err
-		}
-
-		// save the pdf
-		pdfFileName := fmt.Sprintf("%s.pdf", s.Title)
-		pdfSavePath := path.Join(domainSubPath, pdfFileName)
-		if err := generatePDF(pdfSavePath, s.Url); err != nil {
+		if err := c.saveSite(s); err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+func (c *Crawler) saveSite(s Site) error {
+	dateTime := dateTimeFileName()
+	domainSubPath, err := buildPath(c.Archive, s.Url)
+	if err != nil {
+		return err
+	}
+
+	err = os.MkdirAll(domainSubPath, 0700)
+	if err != nil {
+		return err
+	}
+
+	// save the html
+	htmlFileName := fmt.Sprintf("%s.html", dateTime)
+	htmlSavePath := path.Join(domainSubPath, htmlFileName)
+	err = ioutil.WriteFile(htmlSavePath, s.HtmlBody, 0600)
+	if err != nil {
+		return err
+	}
+
+	// save the text
+	textFileName := fmt.Sprintf("%s.txt", dateTime)
+	textSavePath := path.Join(domainSubPath, textFileName)
+	err = ioutil.WriteFile(textSavePath, s.TextBody, 0600)
+	if err != nil {
+		return err
+	}
+
+	// save the pdf
+	pdfFileName := fmt.Sprintf("%s.pdf", dateTime)
+	pdfSavePath := path.Join(domainSubPath, pdfFileName)
+	if err := generatePDF(pdfSavePath, s.Url); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Build the archive path for a URL
+func buildPath(archiveDir string, URL string) (string, error) {
+	parsed, err := url.Parse(URL)
+	if err != nil {
+		return "", err
+	}
+
+	pieces := []string{archiveDir, parsed.Host}
+	// break up the path so we can join with native separators "\" on Windows
+	pieces = append(pieces, strings.Split(parsed.Path, "/")...)
+	return path.Join(pieces...), nil
+}
+
+// Returns a timestamped filename appropriate for Windows and other OSes
+func dateTimeFileName() string {
+	t := time.Now()
+	timestamp := "2006-02-01T15:04:05"
+
+	if runtime.GOOS == "windows" {
+		// underscores instead of colons
+		timestamp = "2006-02-01T15_04_05"
+	}
+	return t.Format(timestamp)
 }
 
 // AddUrl ...
