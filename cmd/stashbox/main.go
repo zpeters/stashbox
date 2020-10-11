@@ -27,15 +27,12 @@ func main() {
 	if listFlag {
 		archives, err := archive.GetArchives(basePath)
 		if err != nil {
-			panic(err)
+			fmt.Println("Error listing archives", err)
+			os.Exit(1)
 		}
-		if len(archives) == 0 {
-			fmt.Println("No archives found...")
-		} else {
-			fmt.Println("Archive listing...")
-			for n, a := range archives {
-				fmt.Printf("%d. %s\n", n+1, a)
-			}
+		fmt.Println("Archive listing...")
+		for n, a := range archives {
+			fmt.Printf("%d. %s\n", n+1, a)
 		}
 		os.Exit(0)
 	}
