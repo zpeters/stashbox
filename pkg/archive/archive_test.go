@@ -1,17 +1,45 @@
 package archive
 
 import (
+	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetArchives(t *testing.T) {
-	testFiles := []string{"/foo/bar/2020-01-02T13:00:01", "/foo/bar/2019-01-02T13:00:01"}
-	archives := buildArchives("./StashDB", testFiles)
-	expected := archive{"/foo/bar", []string{"2020-01-02T13:00:01", "2019-01-02T13:00:01"}}
-	if archives[0].Url != expected.Url {
-		t.Errorf("expected: %s actual: %s", expected.Url, archives[0].Url)
+	var emptyArchive []Archive
+
+	tests := []struct {
+		inputPath        string
+		expectedArchives []Archive
+		expectedError    error
+	}{
+		{".", emptyArchive, fmt.Errorf("no archives found in %s", ".")},
 	}
-	if archives[0].Dates[0] != expected.Dates[0] && len(archives[0].Dates) != len(expected.Dates) {
-		t.Errorf("expected: %s actual: %s", expected.Dates, archives[0].Dates)
+
+	for _, tc := range tests {
+		got, err := GetArchives(tc.inputPath)
+		if tc.expectedError == nil {
+			require.NoError(t, err)
+		} else {
+			require.EqualError(t, err, tc.expectedError.Error())
+		}
+		require.Equal(t, tc.expectedArchives, got)
+	}
+}
+
+func TestBuildArchives(t *testing.T) {
+	tests := []struct {
+		inputTestFiles  []string
+		expectedArchive []Archive
+		expectedError   error
+	}{
+		{[]string{"/foo/bar/2020-01-02T13:00:01", "/foo/bar/2019-01-02T13:00:01"}, []Archive{{"/foo/bar", []string{"2020-01-02T13:00:01", "2019-01-02T13:00:01"}}}, nil},
+	}
+
+	for _, tc := range tests {
+		got := buildArchives("./StashDB", tc.inputTestFiles)
+		require.Equal(t, tc.expectedArchive, got)
 	}
 }
