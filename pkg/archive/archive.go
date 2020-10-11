@@ -2,27 +2,48 @@ package archive
 
 import (
 	"fmt"
-	"io/ioutil"
-	"path"
+	"strings"
+
+	"github.com/bmatcuk/doublestar/v2"
 )
 
-func GetArchives(p string) (archives []string, err error) {
-	domains, err := ioutil.ReadDir(p)
+type archive struct {
+	Url   string
+	Dates []string
+}
+
+// Return a list of archives in the stash
+func GetArchives(basePath string) (archives []archive, err error) {
+	files, err := doublestar.Glob(fmt.Sprintf("%s/**/*.pdf", basePath))
 	if err != nil {
 		return archives, err
 	}
+	return buildArchives(basePath, files), err
+}
 
-	for _, domain := range domains {
-		domainPath := path.Join(p, domain.Name())
-		domainArchives, err := ioutil.ReadDir(domainPath)
-		if err != nil {
-			return archives, err
+func buildArchives(path string, files []string) []archive {
+	var archives []archive
+	var pPage string
+	var page string
+	dates := make([]string, 0)
+	path += "/"
+	for _, file := range files {
+		pieces := strings.Split(strings.TrimPrefix(file, strings.TrimLeft(path, "./")), "/")
+		page = strings.Join(pieces[0:len(pieces)-1], "/")
+		date := strings.TrimRight(pieces[len(pieces)-1], ".pdf")
+
+		if page != pPage && pPage != "" {
+			a := archive{pPage, dates}
+			archives = append(archives, a)
+			dates = make([]string, 0)
 		}
-		for _, archive := range domainArchives {
-			fullArchive := fmt.Sprintf("%s - %s", domain.Name(), archive.Name())
-			archives = append(archives, fullArchive)
-		}
+
+		dates = append(dates, date)
+		pPage = page
 	}
 
-	return archives, nil
+	a := archive{page, dates}
+	archives = append(archives, a)
+
+	return archives
 }

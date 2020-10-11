@@ -3,11 +3,8 @@ package crawler
 import (
 	"strconv"
 	"testing"
+	"time"
 )
-
-func TestDummy(t *testing.T) {
-
-}
 
 func TestGetHtmlTitle(t *testing.T) {
 	const url = "https://github.com/zpeters/stashbox"
@@ -77,4 +74,24 @@ func TestAddUrl(t *testing.T) {
 	if len(c.Urls) != count {
 		t.Errorf("There should be " + strconv.Itoa(count) + " entries, found:" + strconv.Itoa(len(c.Urls)))
 	}
+}
+
+func TestBuildPath(t *testing.T) {
+	p, e := buildPath("./StashDB", "http://www.google.com/a/test.html")
+	if e != nil {
+		t.Error(e)
+	}
+	expected := "StashDB/www.google.com/a/test.html"
+	if p != expected {
+		t.Errorf("expected: %s actual: %s", expected, p)
+	}
+}
+
+func TestDateTimeFileName(t *testing.T) {
+	actual := dateTimeFileName()
+	expected := time.Now().Format("2006-02-01T15:04:05")
+	if expected != actual {
+		t.Errorf("expected: %s actual: %s", expected, actual)
+	}
+
 }
