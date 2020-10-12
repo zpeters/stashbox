@@ -51,7 +51,7 @@ Usage: stashbox <command> <options>
 
 New issues and pull requests are welcomed.  Please see [CONTRIBUTING.md](CONTRIBUTING.md)
 
-### Contributors
+## Contributors
 
 <a href="https://github.com/zpeters/stashbox/graphs/contributors">
   <img src="https://contributors-img.web.app/image?repo=zpeters/stashbox" />
