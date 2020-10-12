@@ -9,7 +9,7 @@
 
 ## Stashbox is your personal Internet Archive
 
-The goal of stashbox is to help you create your own - personal copy of websites that you wish to archive.  
+The goal of stashbox is to help you create your own - personal copy of websites that you wish to archive.
 
 The initial way to do this will be to run a simple command, but in the future it can be extended to a web interface, a plugin or other means.
 
@@ -25,14 +25,27 @@ Having a local "static" copy of a website can help for research, change tracking
 
 ## Usage
 ```
-Usage of ./stashbox:
-  -b string
-    	folder to save stash into (default "./stashDb")
-  -list
-    	list saved archives
-  -url string
-    	url to download
+Usage: stashbox <command> <options>
+
+  Where command is one of:
+    add   --  add a url to the archive
+      -b string
+            stashbox archive directory (defaults to ./stashDb) (default "./stashDb")
+      -u string
+            url to download
+    list  --  list all archives
+      -b string
+            stashbox archive directory (defaults to ./stashDb) (default "./stashDb")
+    open  --  open an archive
+      -b string
+            stashbox archive directory (defaults to ./stashDb) (default "./stashDb")
+      -n int
+            archive number to open (from list command)
+
+  To see help text, you can run:
+    stashbox <command> -h
 ```
+
 ## Contributing
 
 New issues and pull requests are welcomed.  Please see [CONTRIBUTING.md](CONTRIBUTING.md)
