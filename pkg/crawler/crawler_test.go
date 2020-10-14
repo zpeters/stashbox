@@ -10,9 +10,9 @@ func TestGetHtmlTitle(t *testing.T) {
 	const url = "https://github.com/zpeters/stashbox"
 	const want = "GitHub - zpeters/stashbox: Your personal Internet Archive"
 
-	body, err := getHtmlBody(url)
+	body, err := getHTMLBody(url)
 	handleErr(t, err)
-	title, err := getHtmlTitle(body)
+	title, err := getHTMLTitle(body)
 	handleErr(t, err)
 	if title != want {
 		t.Errorf("Wrong title found. Want: %s, Got : %s", want, title)
@@ -28,7 +28,7 @@ func TestAddUrl(t *testing.T) {
 
 	for i := 1; i <= count; i++ {
 		url := "https://www.github.com" + strconv.Itoa(i)
-		err = c.AddUrl(url)
+		err = c.AddURL(url)
 		if err != nil {
 			t.Errorf("Test case for url: '" + url + "' failed; it should pass; error:" + err.Error())
 		}
@@ -65,7 +65,7 @@ func TestCrawl(t *testing.T) {
 	}
 
 	for _, s := range crawlSites {
-		err = c.AddUrl(s)
+		err = c.AddURL(s)
 		handleErr(t, err)
 	}
 	err = c.Crawl()
