@@ -11,76 +11,36 @@ func TestGetHtmlTitle(t *testing.T) {
 	const want = "GitHub - zpeters/stashbox: Your personal Internet Archive"
 
 	body, err := getHtmlBody(url)
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-
+	handleErr(t, err)
 	title, err := getHtmlTitle(body)
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-
+	handleErr(t, err)
 	if title != want {
 		t.Errorf("Wrong title found. Want: %s, Got : %s", want, title)
 	}
 }
 
 func TestAddUrl(t *testing.T) {
-	count := 0
+	count := 6
 	c, err := NewCrawler("")
 	if err != nil {
 		t.Errorf("Unable to create crawler:" + err.Error())
 	}
 
-	url := "https://www.github.com"
-	err = c.AddUrl(url)
-	count++
-	if err != nil {
-		t.Errorf("Test case for url: '" + url + "' failed; it should pass; error:" + err.Error())
+	for i := 1; i <= count; i++ {
+		url := "https://www.github.com" + strconv.Itoa(i)
+		err = c.AddUrl(url)
+		if err != nil {
+			t.Errorf("Test case for url: '" + url + "' failed; it should pass; error:" + err.Error())
+		}
 	}
-
-	url = "http://www.github.com:8000/"
-	err = c.AddUrl(url)
-	count++
-	if err != nil {
-		t.Errorf("Test case for url: '" + url + "' failed; it should pass; error:" + err.Error())
-	}
-
-	url = "httpd://www.github.com"
-	err = c.AddUrl(url)
-	if err == nil {
-		t.Errorf("Test case for url: '" + url + "' failed; it should fail, but we got no error")
-	}
-
-	url = "https:///www.github.com"
-	err = c.AddUrl(url)
-	if err == nil {
-		t.Errorf("Test case for url: '" + url + "' failed; it should fail, but we got no error")
-	}
-
-	url = "//www.github.com:8000"
-	err = c.AddUrl(url)
-	if err == nil {
-		t.Errorf("Test case for url: '" + url + "' failed; it should fail, but we got no error")
-	}
-
-	url = "www.github.com:8000/"
-	err = c.AddUrl(url)
-	count++
-	if err != nil {
-		t.Errorf("Test case for url: '" + url + "' failed; it should pass; error:" + err.Error())
-	}
-
 	if len(c.Urls) != count {
 		t.Errorf("There should be " + strconv.Itoa(count) + " entries, found:" + strconv.Itoa(len(c.Urls)))
 	}
 }
 
 func TestBuildPath(t *testing.T) {
-	p, e := buildPath("./StashDB", "http://www.google.com/a/test.html")
-	if e != nil {
-		t.Error(e)
-	}
+	p, err := buildPath("./StashDB", "http://www.google.com/a/test.html")
+	handleErr(t, err)
 	expected := "StashDB/www.google.com/a/test.html"
 	if p != expected {
 		t.Errorf("expected: %s actual: %s", expected, p)
@@ -94,4 +54,31 @@ func TestDateTimeFileName(t *testing.T) {
 		t.Errorf("expected: %s actual: %s", expected, actual)
 	}
 
+}
+
+func TestCrawl(t *testing.T) {
+	var crawlSites = []string{"https://www.google.com", "https://github.com/zpeters/stashbox"}
+
+	c, err := NewCrawler("")
+	if err != nil {
+		t.Errorf("Unable to create crawler:" + err.Error())
+	}
+
+	for _, s := range crawlSites {
+		err = c.AddUrl(s)
+		handleErr(t, err)
+	}
+	err = c.Crawl()
+	handleErr(t, err)
+
+	if len(crawlSites) != len(c.Sites) {
+		t.Errorf("got %v sites expected %v sites", len(crawlSites), len(c.Sites))
+	}
+
+}
+
+func handleErr(t *testing.T, err error) {
+	if err != nil {
+		t.Error(err.Error())
+	}
 }
