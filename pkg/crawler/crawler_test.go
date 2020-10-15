@@ -2,6 +2,9 @@ package crawler
 
 import (
 	"errors"
+	"io/ioutil"
+	"os"
+	"path"
 	"strconv"
 	"testing"
 	"time"
@@ -10,39 +13,38 @@ import (
 )
 
 // TODO add some more sophisticated testing
-// TODO figure out how to run this test in the github test environment
-// func TestSave(t *testing.T) {
-// 	// Setup the test environment
-// 	tempDir := os.TempDir()
-// 	archivePath := path.Join(tempDir, "STASHBOX")
-// 	defer os.RemoveAll(archivePath)
+func TestSave(t *testing.T) {
+	// Setup the test environment
+	tempDir := os.TempDir()
+	archivePath := path.Join(tempDir, "STASHBOX")
+	defer os.RemoveAll(archivePath)
 
-// 	// Setup our crawler
-// 	c, err := NewCrawler(archivePath)
-// 	require.NoError(t, err)
+	// Setup our crawler
+	c, err := NewCrawler(archivePath)
+	require.NoError(t, err)
 
-// 	// Add some urls
-// 	err = c.AddURL("http://google.com")
-// 	require.NoError(t, err)
-// 	err = c.AddURL("https://thehelpfulhacker.net")
-// 	require.NoError(t, err)
+	// Add some urls
+	err = c.AddURL("http://google.com")
+	require.NoError(t, err)
+	err = c.AddURL("https://thehelpfulhacker.net")
+	require.NoError(t, err)
 
-// 	// Crawl the sites
-// 	err = c.Crawl()
-// 	require.NoError(t, err)
+	// Crawl the sites
+	err = c.Crawl()
+	require.NoError(t, err)
 
-// 	// Save the sites
-// 	err = c.Save()
-// 	require.NoError(t, err)
+	// Save the sites
+	err = c.Save()
+	require.NoError(t, err)
 
-// 	// Get the contents of the archivePath on the file system
-// 	files, err := ioutil.ReadDir(archivePath)
-// 	require.NoError(t, err)
+	// Get the contents of the archivePath on the file system
+	files, err := ioutil.ReadDir(archivePath)
+	require.NoError(t, err)
 
-// 	// there should be two domain folders
-// 	require.Len(t, files, 2)
+	// there should be two domain folders
+	require.Len(t, files, 2)
 
-// }
+}
 
 func TestGetHtmlTitle(t *testing.T) {
 	const url = "https://github.com/zpeters/stashbox"
