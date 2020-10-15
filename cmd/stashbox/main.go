@@ -63,7 +63,7 @@ func main() {
 			panic(err)
 		}
 
-		err = c.AddUrl(*url)
+		err = c.AddURL(*url)
 		if err != nil {
 			panic(err)
 		}

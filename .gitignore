@@ -15,4 +15,9 @@
 # vendor/
 coverage.txt
 
+# ignore binaries
+stashbox
+stashbox.exe
+
+# ignore default archivbe location
 stashDb/

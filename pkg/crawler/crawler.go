@@ -23,9 +23,9 @@ import (
 
 // Site ...
 type Site struct {
-	HtmlBody []byte
+	HTMLBody []byte
 	TextBody []byte
-	Url      string
+	URL      string
 	Title    string
 }
 
@@ -38,26 +38,27 @@ type Crawler struct {
 
 // Error Messages
 var (
-	errNoTitleInHtml = errors.New("No title tag in HTML response")
+	errNoTitleInHTML = errors.New("No title tag in HTML response")
 	// regular expression from: https://mathiasbynens.be/demo/url-regex,
 	// by @imme_emosol
 	urlRegExp, _ = regexp.Compile(`^(https|http)://(-\.)?([^\s/?\.#-]+\.?)+(/[^\s]*)?$`)
 )
 
-// NewCrawler ...
 func NewCrawler(archive string) (Crawler, error) {
 	return Crawler{
 		Archive: archive,
 	}, nil
 }
 
-// Save ...
 func (c *Crawler) Save() error {
-	ensureArchive(c.Archive)
+	err := os.MkdirAll(c.Archive, 0700)
+	if err != nil {
+		panic(err)
+	}
 
 	// save all sites one by one
 	for _, s := range c.Sites {
-		fmt.Printf("Saving %s...\n", s.Url)
+		fmt.Printf("Saving %s...\n", s.URL)
 		if err := c.saveSite(s); err != nil {
 			return err
 		}
@@ -68,7 +69,7 @@ func (c *Crawler) Save() error {
 
 func (c *Crawler) saveSite(s Site) error {
 	dateTime := dateTimeFileName()
-	domainSubPath, err := buildPath(c.Archive, s.Url)
+	domainSubPath, err := buildPath(c.Archive, s.URL)
 	if err != nil {
 		return err
 	}
@@ -81,7 +82,7 @@ func (c *Crawler) saveSite(s Site) error {
 	// save the html
 	htmlFileName := fmt.Sprintf("%s.html", dateTime)
 	htmlSavePath := path.Join(domainSubPath, htmlFileName)
-	err = ioutil.WriteFile(htmlSavePath, s.HtmlBody, 0600)
+	err = ioutil.WriteFile(htmlSavePath, s.HTMLBody, 0600)
 	if err != nil {
 		return err
 	}
@@ -97,7 +98,7 @@ func (c *Crawler) saveSite(s Site) error {
 	// save the pdf
 	pdfFileName := fmt.Sprintf("%s.pdf", dateTime)
 	pdfSavePath := path.Join(domainSubPath, pdfFileName)
-	if err := generatePDF(pdfSavePath, s.Url); err != nil {
+	if err := generatePDF(pdfSavePath, s.URL); err != nil {
 		return err
 	}
 	return nil
@@ -128,8 +129,8 @@ func dateTimeFileName() string {
 	return t.Format(timestamp)
 }
 
-// AddUrl ...
-func (c *Crawler) AddUrl(url string) error {
+// AddURL will add the url to our list of urls
+func (c *Crawler) AddURL(url string) error {
 	url = strings.TrimSpace(url)
 	if len(url) == 0 {
 		return errors.New("URL can't be empty or only containing space")
@@ -155,10 +156,10 @@ func createSiteFilename(url string, htmlBody []byte) (string, error) {
 	forbiddenCharactersWindows := [...]rune{'/', '<', '>', ':', '"', '\\', '|', '?', '*'}
 	reservedFilenamesWindows := [...]string{"CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"}
 
-	title, err := getHtmlTitle(htmlBody)
+	title, err := getHTMLTitle(htmlBody)
 
 	// if there is no title, do old way of creating hash
-	if err == errNoTitleInHtml {
+	if err == errNoTitleInHTML {
 		h := sha256.New()
 		_, err = io.WriteString(h, url)
 		if err != nil {
@@ -187,14 +188,13 @@ func createSiteFilename(url string, htmlBody []byte) (string, error) {
 	return title, nil
 }
 
-// Crawl ...
 func (c *Crawler) Crawl() error {
 	for _, u := range c.Urls {
 		fmt.Printf("Crawling %s...\n", u)
 
 		var site Site
 
-		htmlBody, err := getHtmlBody(u)
+		htmlBody, err := getHTMLBody(u)
 		if err != nil {
 			return err
 		}
@@ -212,7 +212,7 @@ func (c *Crawler) Crawl() error {
 		}
 
 		site.TextBody = textBody
-		site.Url = u
+		site.URL = u
 
 		c.Sites = append(c.Sites, site)
 	}
@@ -220,7 +220,7 @@ func (c *Crawler) Crawl() error {
 	return nil
 }
 
-func getHtmlTitle(body []byte) (title string, err error) {
+func getHTMLTitle(body []byte) (title string, err error) {
 	// HTML DOM Document
 
 	r := bytes.NewReader(body)
@@ -232,13 +232,13 @@ func getHtmlTitle(body []byte) (title string, err error) {
 	titleTag := doc.Find("title").First()
 
 	if titleTag.Size() == 0 {
-		return "", errNoTitleInHtml
+		return "", errNoTitleInHTML
 	}
 
 	return titleTag.Text(), nil
 }
 
-func getHtmlBody(url string) (body []byte, err error) {
+func getHTMLBody(url string) (body []byte, err error) {
 	// #nosec - gosec will detect this as a G107 error
 	// the point of this function *is* to accept a variable URL
 	resp, err := http.Get(url)
@@ -262,13 +262,6 @@ func getTextBody(htmlBody []byte) (body []byte, err error) {
 	}
 
 	return []byte(text), nil
-}
-
-func ensureArchive(p string) {
-	err := os.MkdirAll(p, 0700)
-	if err != nil {
-		panic(err)
-	}
 }
 
 func generatePDF(path, url string) error {

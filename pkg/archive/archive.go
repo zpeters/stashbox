@@ -23,11 +23,16 @@ func GetArchives(basePath string) (archives []Archive, err error) {
 		return archives, fmt.Errorf("no archives found in %s", basePath)
 	}
 
-	return buildArchives(basePath, files), err
+	archives, err = buildArchives(basePath, files)
+	if err != nil {
+		return archives, err
+	}
+
+	return archives, nil
 }
 
-func buildArchives(path string, files []string) []Archive {
-	var archives []Archive
+func buildArchives(path string, files []string) ([]Archive, error) {
+	var archives = []Archive{}
 	var pPage string
 	var page string
 	dates := make([]string, 0)
@@ -38,9 +43,7 @@ func buildArchives(path string, files []string) []Archive {
 		date := strings.TrimRight(pieces[len(pieces)-1], ".pdf")
 
 		if page != pPage && pPage != "" {
-			a := Archive{pPage, dates}
-			archives = append(archives, a)
-			dates = make([]string, 0)
+			return archives, fmt.Errorf("Error building archive")
 		}
 
 		dates = append(dates, date)
@@ -50,5 +53,5 @@ func buildArchives(path string, files []string) []Archive {
 	a := Archive{page, dates}
 	archives = append(archives, a)
 
-	return archives
+	return archives, nil
 }
