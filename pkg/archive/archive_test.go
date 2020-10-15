@@ -1,6 +1,7 @@
 package archive
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -36,10 +37,17 @@ func TestBuildArchives(t *testing.T) {
 		expectedError   error
 	}{
 		{[]string{"/foo/bar/2020-01-02T13:00:01", "/foo/bar/2019-01-02T13:00:01"}, []Archive{{"/foo/bar", []string{"2020-01-02T13:00:01", "2019-01-02T13:00:01"}}}, nil},
+		{[]string{"/foo/bar/20fdsafds20-01-02T13:00:01", "/fofdjsakl;o/b2019-01-02T13:00:01"}, []Archive{}, errors.New("Error building archive")},
 	}
 
 	for _, tc := range tests {
-		got := buildArchives("./StashDB", tc.inputTestFiles)
+		got, err := buildArchives("./StashDB", tc.inputTestFiles)
 		require.Equal(t, tc.expectedArchive, got)
+
+		if tc.expectedError == nil {
+			require.NoError(t, err)
+		} else {
+			require.Equal(t, tc.expectedError.Error(), err.Error())
+		}
 	}
 }

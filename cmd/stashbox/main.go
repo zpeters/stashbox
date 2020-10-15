@@ -63,7 +63,7 @@ func main() {
 			panic(err)
 		}
 
-		err = c.AddUrl(*url)
+		err = c.AddURL(*url)
 		if err != nil {
 			panic(err)
 		}
@@ -96,14 +96,23 @@ func main() {
 			openCmd.Usage()
 			os.Exit(2)
 		}
-		if *n < 1 {
-			fmt.Println("Error: -n is required")
-			openCmd.Usage()
-			os.Exit(1)
-		}
 		archives, err := archive.GetArchives(*openBase)
 		if err != nil {
 			panic(err)
+		}
+
+		if *n < 1 {
+			fmt.Println("Choose an archive to open:")
+			for i, n := range archives {
+				fmt.Printf("%d. %s [%d image(s)]\n", i+1, n.URL, len(n.Dates))
+			}
+			fmt.Print("\n> ")
+			_, err := fmt.Scanf("%d", n)
+
+			if err != nil {
+				fmt.Printf("ERROR: reading input: %v", err)
+				os.Exit(1)
+			}
 		}
 
 		a := archives[*n-1]
