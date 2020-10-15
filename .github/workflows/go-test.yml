@@ -23,7 +23,9 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Install user dependencies
-      run: sudo apt-get install wkhtmltopdf
+      run: |
+        sudo apt-get update
+        sudo apt-get install wkhtmltopdf
     - name: Get dependencies
       run: |
         go get -v -t -d ./...
