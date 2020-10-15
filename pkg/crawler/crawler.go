@@ -44,16 +44,17 @@ var (
 	urlRegExp, _ = regexp.Compile(`^(https|http)://(-\.)?([^\s/?\.#-]+\.?)+(/[^\s]*)?$`)
 )
 
-// NewCrawler ...
 func NewCrawler(archive string) (Crawler, error) {
 	return Crawler{
 		Archive: archive,
 	}, nil
 }
 
-// Save ...
 func (c *Crawler) Save() error {
-	ensureArchive(c.Archive)
+	err := os.MkdirAll(c.Archive, 0700)
+	if err != nil {
+		panic(err)
+	}
 
 	// save all sites one by one
 	for _, s := range c.Sites {
@@ -187,7 +188,6 @@ func createSiteFilename(url string, htmlBody []byte) (string, error) {
 	return title, nil
 }
 
-// Crawl ...
 func (c *Crawler) Crawl() error {
 	for _, u := range c.Urls {
 		fmt.Printf("Crawling %s...\n", u)
@@ -262,13 +262,6 @@ func getTextBody(htmlBody []byte) (body []byte, err error) {
 	}
 
 	return []byte(text), nil
-}
-
-func ensureArchive(p string) {
-	err := os.MkdirAll(p, 0700)
-	if err != nil {
-		panic(err)
-	}
 }
 
 func generatePDF(path, url string) error {

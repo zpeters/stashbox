@@ -1,10 +1,50 @@
 package crawler
 
 import (
+	"errors"
+	"io/ioutil"
+	"os"
+	"path"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
+
+func TestSave(t *testing.T) {
+	// Setup the test environment
+	tempDir := os.TempDir()
+	archivePath := path.Join(tempDir, "STASHBOX")
+	defer os.RemoveAll(archivePath)
+
+	// Setup our crawler
+	c, err := NewCrawler(archivePath)
+	require.NoError(t, err)
+
+	// Add some urls
+	err = c.AddURL("http://google.com")
+	require.NoError(t, err)
+	err = c.AddURL("https://thehelpfulhacker.net")
+	require.NoError(t, err)
+
+	// Crawl the sites
+	err = c.Crawl()
+	require.NoError(t, err)
+
+	// Save the sites
+	err = c.Save()
+	require.NoError(t, err)
+
+	// Get the contents of the archivePath on the file system
+	files, err := ioutil.ReadDir(archivePath)
+	require.NoError(t, err)
+
+	// there should be two domain folders
+	require.Len(t, files, 2)
+
+	// TODO add some more sophisticated testing
+}
 
 func TestGetHtmlTitle(t *testing.T) {
 	const url = "https://github.com/zpeters/stashbox"
@@ -39,11 +79,24 @@ func TestAddUrl(t *testing.T) {
 }
 
 func TestBuildPath(t *testing.T) {
-	p, err := buildPath("./StashDB", "http://www.google.com/a/test.html")
-	handleErr(t, err)
-	expected := "StashDB/www.google.com/a/test.html"
-	if p != expected {
-		t.Errorf("expected: %s actual: %s", expected, p)
+	var tests = []struct {
+		inputDir       string
+		inputURL       string
+		expectedOutput string
+		expectedError  error
+	}{
+		{"./StashDB", "http://www.google.com/a/test.html", "StashDB/www.google.com/a/test.html", nil},
+		// See https://golang.org/src/net/url/url_test.go "parseRequestURLTests"
+		{"./AnotherDB", " http://foo.com", "", errors.New("parse \" http://foo.com\": first path segment in URL cannot contain colon")},
+	}
+	for _, tt := range tests {
+		actual, err := buildPath(tt.inputDir, tt.inputURL)
+		require.Equal(t, tt.expectedOutput, actual)
+		if tt.expectedError == nil {
+			require.NoError(t, err)
+		} else {
+			require.Equal(t, tt.expectedError.Error(), err.Error())
+		}
 	}
 }
 
