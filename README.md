@@ -7,7 +7,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/zpeters/stashbox)](https://goreportcard.com/report/github.com/zpeters/stashbox)
 [![License](https://img.shields.io/github/license/zpeters/stashbox)](https://img.shields.io/github/license/zpeters/stashbox)
 [![Contributers](https://img.shields.io/github/contributors/zpeters/stashbox)](https://img.shields.io/github/contributors/zpeters/stashbox)
-
+![gopherbadger-tag-do-not-edit](https://github.com/KrishKayc/stashbox/blob/add-code-coverage-badge/coverage/coverage_badge.png)
 ## Stashbox is your personal Internet Archive
 
 The goal of stashbox is to help you create your own - personal copy of websites that you wish to archive.
