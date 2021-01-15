@@ -9,7 +9,7 @@ COPY . .
 
 RUN CGO_ENABLED=0 go build -a -ldflags "-extldflags '-static -s'" -o stashbox main.go
 
-FROM alpine:3.12
+FROM alpine:3.13
 
 RUN set -ex \
     && apk add --no-cache ca-certificates
