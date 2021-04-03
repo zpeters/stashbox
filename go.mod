@@ -6,7 +6,7 @@ require (
 	github.com/PuerkitoBio/goquery v1.6.1
 	github.com/SebastiaanKlippert/go-wkhtmltopdf v1.6.1
 	github.com/andybalholm/cascadia v1.2.0 // indirect
-	github.com/bmatcuk/doublestar/v2 v2.0.4
+	github.com/bmatcuk/doublestar/v3 v3.0.0
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/fogleman/gg v1.3.0 // indirect
