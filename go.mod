@@ -3,7 +3,7 @@ module stashbox
 go 1.14
 
 require (
-	github.com/PuerkitoBio/goquery v1.6.1
+	github.com/PuerkitoBio/goquery v1.7.0
 	github.com/SebastiaanKlippert/go-wkhtmltopdf v1.6.1
 	github.com/andybalholm/cascadia v1.2.0 // indirect
 	github.com/bmatcuk/doublestar/v2 v2.0.4
